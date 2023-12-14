@@ -4,6 +4,7 @@ import userRouter from './routes/users';
 import cardRouter from './routes/cards';
 import authMiddleware from './middleware/auth-middleware';
 import errorMiddleware from './middleware/error-middleware';
+import { createUser, login } from './controllers/users';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -16,6 +17,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.use(authMiddleware);
+
+app.post('/signin', login);
+app.post('/signup', createUser);
 
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);

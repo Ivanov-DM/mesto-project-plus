@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import User from '../models/user';
 import BadRequestErr from '../errors/bad-request-err';
 import NotFoundErr from '../errors/not-found-err';
@@ -7,19 +9,24 @@ export const createUser = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => User.create({
-  name: req.body.name,
-  about: req.body.about,
-  avatar: req.body.avatar,
-})
-  .then((user) => res.send(user))
-  .catch((err) => {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
-      next(new BadRequestErr('Переданы некорректные данные'));
-    } else {
-      next(err);
-    }
-  });
+) => {
+  bcrypt.hash(req.body.password, 10)
+    .then((hash) => User.create({
+      name: req.body.name,
+      about: req.body.about,
+      avatar: req.body.avatar,
+      email: req.body.email,
+      password: hash,
+    }))
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        next(new BadRequestErr('Переданы некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
+};
 
 export const getUsers = (
   req: Request,
@@ -100,3 +107,17 @@ export const updateUserAvatar = (
       next(err);
     }
   });
+
+export const login = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch(next);
+};

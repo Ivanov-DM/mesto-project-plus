@@ -22,7 +22,7 @@ export const createCard = (
 })
   .then((card) => res.send(card))
   .catch((err) => {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestErr('Переданы некорректные данные'));
     } else {
       next(err);
@@ -36,7 +36,7 @@ export const deleteCardById = (
 ) => Card.findByIdAndRemove(req.params.cardId)
   .then((card) => {
     if (!card) {
-      throw new NotFoundErr('Передан несуществующий _id карточки');
+      throw new NotFoundErr('Карточка с указанным _id не найдена');
     }
     res.send({ message: 'Карточка удалена' });
   })
