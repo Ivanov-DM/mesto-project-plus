@@ -55,38 +55,62 @@ export const getUserById = (
     }
   });
 
+export const getCurrentUser = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { _id } = req.user;
+  User.findById(_id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundErr('Пользователь по указанному _id не найден');
+      }
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestErr('Переданы некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
+};
+
 export const updateUserAbout = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => User.findByIdAndUpdate(
-  req.body.user._id,
-  { $set: { name: req.body.name, about: req.body.about } },
-  {
-    new: true,
-    runValidators: true,
-  },
-)
-  .then((user) => {
-    if (!user) {
-      throw new NotFoundErr('Пользователь по указанному _id не найден');
-    }
-    res.send(user);
-  })
-  .catch((err) => {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
-      next(new BadRequestErr('Переданы некорректные данные'));
-    } else {
-      next(err);
-    }
-  });
+) => {
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { name: req.body.name, about: req.body.about } },
+    {
+      new: true,
+      runValidators: true,
+    },
+  )
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundErr('Пользователь по указанному _id не найден');
+      }
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        next(new BadRequestErr('Переданы некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
+};
 
 export const updateUserAvatar = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => User.findByIdAndUpdate(
-  req.body.user._id,
+  req.user._id,
   { $set: { avatar: req.body.avatar } },
   {
     new: true,

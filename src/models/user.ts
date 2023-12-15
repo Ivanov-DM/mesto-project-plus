@@ -49,12 +49,14 @@ export const userSchema = new Schema<IUser, UserModel>({
   password: {
     type: String,
     required: true,
+    select: false,
     minlength: 8,
   },
 });
 
 userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {
   return this.findOne({ email })
+    .select('+password')
     .then((user) => {
       if (!user) {
         return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));

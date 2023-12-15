@@ -1,15 +1,15 @@
-import mongoose from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 import validateUrl from '../utils/utils';
 
 interface ICard {
   name: string;
   link: string;
-  owner: mongoose.Types.ObjectId;
-  likes: mongoose.Types.ObjectId[];
+  owner: Types.ObjectId;
+  likes: Types.ObjectId[];
   createdAt: Date;
 }
 
-const cardSchema = new mongoose.Schema<ICard>({
+export const cardSchema = new Schema<ICard>({
   name: {
     type: String,
     required: true,
@@ -22,12 +22,12 @@ const cardSchema = new mongoose.Schema<ICard>({
     validate: validateUrl,
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'user',
     required: true,
   },
   likes: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'user',
     default: [],
   }],
@@ -37,4 +37,4 @@ const cardSchema = new mongoose.Schema<ICard>({
   },
 });
 
-export default mongoose.model<ICard>('card', cardSchema);
+export default model<ICard>('card', cardSchema);
