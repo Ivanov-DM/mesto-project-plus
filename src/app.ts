@@ -5,6 +5,7 @@ import cardRouter from './routes/cards';
 import errorMiddleware from './middlewares/error-middleware';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
+import { requestLogger, errorLogger } from './middlewares/logger';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -16,6 +17,8 @@ mongoose.connect(DB_URL)
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+app.use(requestLogger);
+
 app.post('/signin', login);
 app.post('/signup', createUser);
 
@@ -24,6 +27,7 @@ app.use(auth);
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 
+app.use(errorLogger);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

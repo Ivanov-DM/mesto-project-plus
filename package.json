@@ -31,8 +31,10 @@
     "@types/validator": "^13.11.7",
     "bcrypt": "^5.1.1",
     "express": "^4.18.1",
+    "express-winston": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.5.0",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "winston": "^3.11.0"
   }
 }
