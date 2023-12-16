@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import env from '../../config';
 import User from '../models/user';
 import BadRequestErr from '../errors/bad-request-err';
 import NotFoundErr from '../errors/not-found-err';
@@ -97,12 +98,11 @@ export const login = (
   next: NextFunction,
 ) => {
   const { email, password } = req.body;
-  const { JWT_SECRET } = process.env;
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        JWT_SECRET!,
+        env.JWT_SECRET,
         { expiresIn: '7d' },
       );
       res.send({ token });

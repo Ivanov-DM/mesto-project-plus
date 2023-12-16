@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { celebrate, Joi, errors } from 'celebrate';
-import 'dotenv/config';
+import env from '../config';
 import userRouter from './routes/users';
 import cardRouter from './routes/cards';
 import errorMiddleware from './middlewares/error-middleware';
@@ -10,10 +10,9 @@ import auth from './middlewares/auth';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import URL_REGEX from './utils/constants';
 
-const { PORT = 3000, DB_URL } = process.env;
 const app = express();
 
-mongoose.connect(DB_URL!)
+mongoose.connect(env.DB_URL)
   // eslint-disable-next-line no-console
   .then(() => console.log('MongoDB connected!'));
 app.use(express.urlencoded({ extended: false }));
@@ -53,7 +52,7 @@ app.use(errorLogger);
 app.use(errors());
 app.use(errorMiddleware);
 
-app.listen(PORT, () => {
+app.listen(env.PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`App listening on port ${PORT}`);
+  console.log(`App listening on port ${env.PORT}`);
 });
