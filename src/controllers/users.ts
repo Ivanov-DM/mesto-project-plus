@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user';
 import BadRequestErr from '../errors/bad-request-err';
 import NotFoundErr from '../errors/not-found-err';
+import ConflictError from '../errors/conflict-error';
 
 export const createUser = (
   req: Request,
@@ -22,6 +23,8 @@ export const createUser = (
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new BadRequestErr('Переданы некорректные данные'));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует'));
       } else {
         next(err);
       }
@@ -40,27 +43,8 @@ export const getUserById = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => User.findById(req.params.userId)
-  .then((user) => {
-    if (!user) {
-      throw new NotFoundErr('Пользователь по указанному _id не найден');
-    }
-    res.send(user);
-  })
-  .catch((err) => {
-    if (err.name === 'CastError') {
-      next(new BadRequestErr('Переданы некорректные данные'));
-    } else {
-      next(err);
-    }
-  });
-
-export const getCurrentUser = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
 ) => {
-  const { _id } = req.user;
+  const _id = !req.params.userId ? req.user : req.params.userId;
   User.findById(_id)
     .then((user) => {
       if (!user) {
@@ -77,14 +61,16 @@ export const getCurrentUser = (
     });
 };
 
-export const updateUserAbout = (
+export const updateUserInfo = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
+  const { name, about, avatar } = req.body;
+
   User.findByIdAndUpdate(
     req.user._id,
-    { $set: { name: req.body.name, about: req.body.about } },
+    { $set: { name, about, avatar } },
     {
       new: true,
       runValidators: true,
@@ -105,42 +91,20 @@ export const updateUserAbout = (
     });
 };
 
-export const updateUserAvatar = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => User.findByIdAndUpdate(
-  req.user._id,
-  { $set: { avatar: req.body.avatar } },
-  {
-    new: true,
-    runValidators: true,
-    upsert: false,
-  },
-)
-  .then((user) => {
-    if (!user) {
-      throw new NotFoundErr('Пользователь по указанному _id не найден');
-    }
-    res.send(user);
-  })
-  .catch((err) => {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
-      next(new BadRequestErr('Переданы некорректные данные'));
-    } else {
-      next(err);
-    }
-  });
-
 export const login = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   const { email, password } = req.body;
+  const { JWT_SECRET } = process.env;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign(
+        { _id: user._id },
+        JWT_SECRET!,
+        { expiresIn: '7d' },
+      );
       res.send({ token });
     })
     .catch(next);

@@ -1,6 +1,5 @@
-const validateUrl = (value: string) => {
-  const urlRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/;
-  return urlRegex.test(value);
-};
+import URL_REGEX from './constants';
+
+const validateUrl = (value: string) => URL_REGEX.test(value);
 
 export default validateUrl;
