@@ -20,7 +20,14 @@ export const createUser = (
       email: req.body.email,
       password: hash,
     }))
-    .then((user) => res.send(user))
+    .then((user) => {
+      const {
+        name, about, avatar, email,
+      } = user;
+      res.send({
+        name, about, avatar, email,
+      });
+    })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new BadRequestErr('Переданы некорректные данные'));
